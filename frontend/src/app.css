@@ -4,8 +4,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: rgba(0, 0, 0, 0.87);
+  background-color: #ffffff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -57,6 +57,7 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
@@ -76,4 +77,25 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+
+.top-bar {
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+  width: 100%; 
+  background-color: #ffffff;
+  color: #000000; 
+  padding: 1rem 1rem; 
+  position: fixed; 
+  top: 0;
+  left: 0; 
+  z-index: 1000; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+}
+
+h1 {
+  margin: 0; /* Remove default margin */
+  font-size: 1.5rem; /* Set the size of the title */
 }
