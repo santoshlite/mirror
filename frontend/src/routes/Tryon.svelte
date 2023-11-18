@@ -1,6 +1,10 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { writable } from 'svelte/store';
+    import { navigate } from 'svelte-routing';
+    import logo from '/src/assets/logo.png'; 
+    import { clothes } from '../store.js'; 
+
     import * as MediaPipeVision from '@mediapipe/tasks-vision';
     let MediaPipeDrawing: MediaPipeVision.DrawingUtils;
     const runningMode = "VIDEO";
@@ -16,7 +20,7 @@
           delegate: "GPU"
         },
         runningMode: runningMode,
-        numHands: 2
+        numHands: 1
       });
     };
     createHandLandmarker();
@@ -105,6 +109,7 @@
                     }
                     else if (slopeBounds.horizontal.min <= slope && slopeBounds.horizontal.max >= slope) {
                       console.log("horizontal swipe");
+                      swipe()
                     }
                   }
                 }
@@ -126,7 +131,9 @@
       }
       await frameLoop();
     }
+
     const poses = writable([]); 
+    const currentIndex = writable(0);
   
     function startWebcam() {
       if (navigator.mediaDevices.getUserMedia) {
@@ -152,6 +159,13 @@
       }, 1000);
     }
   
+
+    function swipe() {
+    currentIndex.update(n => {
+      return $clothes.length === n + 1 ? 0 : n + 1;
+    });
+  }
+
     function takePicture() {
     canvasElement.width = videoElement.videoWidth;
     canvasElement.height = videoElement.videoHeight;
@@ -161,42 +175,101 @@
   }
 
     onMount(() => {
-      
       handCanvasContext = handCanvasElement.getContext('2d');
-      // handCanvasContext = handCanvasElement.getContext('2d');
       MediaPipeDrawing = new MediaPipeVision.DrawingUtils(handCanvasContext);
       startWebcam();
       startCountdown();
+      if ($clothes.length === 0) {
+        navigate('/');
+      }
     });
+
   </script>
   
+
+
+<div class="top-bar">
+  <div class="spacer"></div> 
+  <a href="/" class="logo-container">
+      <img src={logo} alt="Mirror Logo" class="logo"/>
+  </a>
+  <div class="spacer"></div> 
+  <div class="icon-container">
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" class="text-xl" height="1.5em" width="1.5em" xmlns="http://www.w3.org/2000/svg"><path d="M6.50488 2H17.5049C17.8196 2 18.116 2.14819 18.3049 2.4L21.0049 6V21C21.0049 21.5523 20.5572 22 20.0049 22H4.00488C3.4526 22 3.00488 21.5523 3.00488 21V6L5.70488 2.4C5.89374 2.14819 6.19013 2 6.50488 2ZM19.0049 8H5.00488V20H19.0049V8ZM18.5049 6L17.0049 4H7.00488L5.50488 6H18.5049ZM9.00488 10V12C9.00488 13.6569 10.348 15 12.0049 15C13.6617 15 15.0049 13.6569 15.0049 12V10H17.0049V12C17.0049 14.7614 14.7663 17 12.0049 17C9.24346 17 7.00488 14.7614 7.00488 12V10H9.00488Z"></path></svg>
+    <div class="popup">No Product on the cart.</div>
+  </div>
+</div>
+
+  
+  <div class="webcam-container">
+    <canvas id="handCanvas" bind:this={handCanvasElement}></canvas>
+    {#if timer > 0}
+      <div class="timer">{timer}</div>
+    {/if}
+
+    <video bind:this={videoElement} autoplay class="webcam-video"></video>
+    <canvas bind:this={canvasElement} style="display: none;"></canvas>
+  </div>
+  
+  <div class="bottom-bar">
+    {#each $clothes as item, index (item.id)}
+      <img src={item.image}
+           class="dock-icon { $currentIndex === index ? 'highlight' : '' }"
+           alt={item.name}
+           on:click={() => {$currentIndex = index;}}>
+    {/each}
+  </div>
+  
+  
+  <div class="image-gallery">
+    <button on:click={startCountdown}>Take pic</button>
+    <div class="image-display">
+      {#if $clothes.length > 0}
+        <img src={$clothes[$currentIndex].image} class="displayed-image" alt="Displayed">
+      {/if}
+    </div>
+
+    {#each $poses as image, index (image)}
+      <img src={image}
+           class="captured-image { $currentIndex === index ? 'highlight' : '' }"
+           alt="Captured snapshot">
+    {/each}
+  </div>
+
+
   <style>
-    .webcam-container {
+  .webcam-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: calc(100vh - 70px);
+    height: calc(100vh - 65px);
     width: 50%;
     position: absolute;
     left: 0;
-    top: 70px; 
+    top: 65px; 
     overflow: hidden;
     }
   
-    .webcam-video {
+  .webcam-video {
       height: 100%;
       width: 100%;
       transform: scaleX(-1);
       object-fit: cover;
     }
-
-    
   
+  #handCanvas {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      z-index: 2;
+      transform: rotateY(180deg);
+    }
+
     .timer {
       position: absolute;
       font-size: 3rem;
       color: white;
-      z-index: 10;
+      z-index: 3;
     }
 
     #handCanvas {
@@ -207,10 +280,10 @@
 
     .image-gallery {
     position: absolute;
-    top: 70px; 
+    top: 65px; 
     right: 0;
     width: 50%; 
-    height: calc(100vh - 70px);
+    height: calc(100vh - 65px);
     overflow-y: auto; 
     display: flex;
     flex-direction: column;
@@ -220,27 +293,38 @@
   }
 
   .captured-image {
-    max-width: 100%;
-    margin-bottom: 1rem; /* Space between images */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Optional: adds some depth to images */
+    max-width: 90%;
+    margin-bottom: 1rem; 
+    border-radius: 10px;
   }
 
-  </style>
-  
-  <div class="webcam-container">
-    <canvas id="handCanvas" bind:this={handCanvasElement}></canvas>
+  .displayed-image{
+    max-width: 50%;
+    margin-bottom: 1rem; 
+    border-radius: 10px;
+  }
 
-    {#if timer > 0}
-      <div class="timer">{timer}</div>
-    {/if}
+  .bottom-bar {
+  position: fixed;
+  bottom: 0;
+  margin-bottom: 10px;
+  left: 50%; 
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
+  z-index: 100;
+  background-color: rgba(55, 55, 55, 0.751); 
+  border: 1px solid #2f2f2f;
+  border-radius: 15px;
+}
 
-    <video bind:this={videoElement} autoplay class="webcam-video"></video>
-    <canvas bind:this={canvasElement} style="display: none;"></canvas>
-  </div>
-  
-  <div class="image-gallery">
-    {#each $poses as image (image)}
-      <img src={image} class="captured-image" alt="Captured snapshot">
-    {/each}
-    <button on:click={startCountdown}>Take pic</button>
-  </div>
+.bottom-bar img {
+  max-width: 60px;
+  margin: 0 8px;
+  transition: transform 0.3s ease;
+  border-radius: 10px; 
+}
+
+</style>

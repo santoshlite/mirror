@@ -14,12 +14,9 @@
 }
 
 a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  text-decoration: none;
+  color: white;
+  font-weight: 600;
 }
 
 body {
@@ -58,13 +55,6 @@ button {
   transition: border-color 0.25s;
 }
 
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
 
 @media (prefers-color-scheme: light) {
   :root {
@@ -82,9 +72,9 @@ button:focus-visible {
 .top-bar {
   display: flex;
   margin: 0;
-  justify-content: center; /* Adjusted to center for the logo container */
+  justify-content: space-between;
   align-items: center; 
-  overflow: auto;
+  overflow: visible;
   width: 100%; 
   background-color: #ffffff;
   color: #000000; 
@@ -97,31 +87,72 @@ button:focus-visible {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
 }
 
+.top-bar::before {
+  content: '';
+  display: block;
+  /* Assuming the icon container is 1.5em wide plus 15px margin */
+  width: calc(1.5em + 15px); 
+  /* This will balance the space taken by the icon on the right */
+}
+
 .top-bar img {
   height: 35px;
-  /* Ensure the logo is centered within its container */
-  display: block; /* This will allow margin auto to work */
+  /* Center the image in case it's not already */
+  display: block;
   margin: auto;
 }
 
-.spacer {
-  flex: 1; /* Flex-grow is 1 for both spacers to push the logo to center */
-}
-
 .icon-container {
-  flex: 0; /* Flex-grow is set to 0 to prevent the icon container from growing */
-  margin-right: 15px; /* Keep your margin-right as is */
+  /* Keep this as is */
+  margin-right: 15px;
+  position: relative;
 }
 
-/* You may need to add this if you haven't already */
-.logo-container {
-  flex: 1; /* This will allow the logo to have space to be centered */
-  display: flex; /* This makes sure the image inside can be centered with margin auto */
+.popup {
+  display: none;
+  position: absolute;
+  top: 100%; 
+  left: -100%;
+  transform: translateX(-50%); 
+  background-color: white; 
+  border: 1px solid black; 
+  border-radius: 10px;
+  padding: 10px;
+  z-index: 1000; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
 }
 
+.icon-container:hover .popup {
+  display: block;
+}
+
+
+.product-list, .cart-item {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.image {
+  height: 150px;
+  width: 150px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.total {
+  text-align: right;
+}
+
+.cart-list {
+  border: 2px solid;
+  padding: 10px;
+}
+
+.home-body {
+  margin-top: 65px; ;
+}
 
 h1 {
-  margin: 0;
-  margin-bottom: 0.5px; 
+  margin: 20px;
   font-size: 1.5rem; 
 }
