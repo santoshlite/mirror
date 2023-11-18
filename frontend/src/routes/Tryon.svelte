@@ -1,14 +1,14 @@
 <script lang="ts">
-    import * as Vision from '@mediapipe/tasks-vision';
-    let Drawing = undefined;
+    import * as MediaPipeVision from '@mediapipe/tasks-vision';
+    let MediaPipeDrawing = undefined;
     const runningMode = "VIDEO";
     let handLandmarker = undefined;
     // import and load hand landmarker model from google
     const createHandLandmarker = async () => {
-      const vision = await Vision.FilesetResolver.forVisionTasks(
+      const vision = await MediaPipeVision.FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
       );
-      handLandmarker = await Vision.HandLandmarker.createFromOptions(vision, {
+      handLandmarker = await MediaPipeVision.HandLandmarker.createFromOptions(vision, {
         baseOptions: {
           modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
           delegate: "GPU"
@@ -19,15 +19,11 @@
     };
     createHandLandmarker();
 
-    let canvasElement;
+    let handCanvasElement;
     let videoElement;
-    let canvasContext;
+    let handCanvasContext;
 
     async function startGestureWebcam() {
-      canvasElement.style.width = videoElement.videoWidth;
-      canvasElement.style.height = videoElement.videoHeight;
-      canvasElement.width = videoElement.videoWidth;
-      canvasElement.height = videoElement.videoHeight;
 
       let lastVideoTime = -1;
       let results = undefined;
@@ -59,9 +55,9 @@
             lastVideoTime = videoElement.currentTime;
             results = handLandmarker.detectForVideo(videoElement, startTimeMs);
           }
-          canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
+          handCanvasContext.clearRect(0, 0, handCanvasElement.width, handCanvasElement.height);
           if (results.landmarks && results.landmarks.length > 0 && results.landmarks[0].length > 8) {
-            Drawing.drawLandmarks([results.landmarks[0][8]], {color: "FF0000", lineWidth: 2});
+            MediaPipeDrawing.drawLandmarks([results.landmarks[0][8]], {color: "FF0000", lineWidth: 2});
             currentPos = results.landmarks[0][8];
             if (previousPos !== undefined) {
               if (disp() < EPS) {
@@ -101,8 +97,8 @@
   
     import { onMount } from 'svelte';
     onMount(() => {
-      canvasContext = canvasElement.getContext('2d');
-      Drawing = new Vision.DrawingUtils(canvasContext);
+      handCanvasContext = handCanvasElement.getContext('2d');
+      MediaPipeDrawing = new MediaPipeVision.DrawingUtils(handCanvasContext);
       startWebcam();
     });
   </script>
@@ -130,7 +126,7 @@
   </style>
   
   <div class="webcam-container">
-    <canvas bind:this={canvasElement}></canvas>
+    <canvas id="handCanvas" bind:this={handCanvasElement}></canvas>
     <video bind:this={videoElement} autoplay class="webcam-video"></video>
   </div>
   
