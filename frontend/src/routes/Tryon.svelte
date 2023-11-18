@@ -39,20 +39,39 @@
       let startTime = Math.floor(performance.now());
       let previousPos = undefined;
       let currentPos = undefined;
-      let swipeDistance = 0;
-      let swipeDuration = 0;
-      const MIN_SWIPE_DISTANCE = 0.15;
-      const MAX_SWIPE_DURATION = 1.5;
-      let frameCounter = 0;
-      const EPS = 0.01;
-      const PERPEPS = 0.1;
+      let startPos = undefined;
+      let motionStartTime = undefined;
+      let motionEndTime = undefined;
+      let stillFrameCounter = 0;
+      const STILL_FRAME_THRESHOLD = 10;
+      const EPS = 0.05;
+      const MIN_SWIPE_VELOCITY = 0.3;
       let moving: boolean = false;
+
+      // "min"/"max" is rough terminology
+      let slopeBounds = {
+        "vertical": {
+          "min": 2,
+          "max": -2
+        },
+        "horizontal": {
+          "min": -1,
+          "max": 1
+        }
+      };
+      
+      // idea: check right/left/up/down based on slope
+      // and check avg velocity to register as swipe or not
+
 
       function dist(x1, y1, x2, y2) {
         return Math.sqrt((x1-x2)**2 + (y1-y2)**2);
       }
-      function disp() {
-        return dist(currentPos.x, currentPos.y, previousPos.x, previousPos.y);
+      function dista(a,b) {
+        return dist(a.x, a.y, b.x, b.y);
+      }
+      function now() {
+        return Math.floor(performance.now()) / 1000;
       }
       async function frameLoop() {
         if (handLandmarker) {
@@ -67,23 +86,40 @@
             MediaPipeDrawing.drawLandmarks([results.landmarks[0][8]], {color: "FF0000", lineWidth: 2});
             currentPos = results.landmarks[0][8];
             if (previousPos !== undefined) {
-              if (frameCounter == 10) {
-                frameCounter = 0;
-                if (disp() < EPS) {
-                  if (moving) {
-                    moving = false;
-                    console.log("movement ended");
-                    console.log("squared displacement", disp());
+              if (dista(currentPos, previousPos) < EPS) {
+                stillFrameCounter++;
+                if (moving && stillFrameCounter == STILL_FRAME_THRESHOLD) {
+                  motionEndTime = now();
+                  moving = false;
+                  console.log("movement ended");
+                  console.log("displacement", dista(currentPos, startPos));
+                  stillFrameCounter = 0;
+                  
+                  let slope = (currentPos.y - startPos.y)/(currentPos.x - startPos.x);
+                  let avgVelocity = (dista(currentPos, startPos)/(motionEndTime - motionStartTime));
+                  if (avgVelocity >= MIN_SWIPE_VELOCITY) {
+                    console.log("fast enough to be a swipe");
+                    console.log("slope", slope);
+                    if (slopeBounds.vertical.min <= slope || slopeBounds.vertical.max >= slope) {
+                      console.log("vertical swipe");
+                    }
+                    else if (slopeBounds.horizontal.min <= slope && slopeBounds.horizontal.max >= slope) {
+                      console.log("horizontal swipe");
+                    }
                   }
                 }
-                else {
+              }
+              else {
+                if (!moving) {
+                  motionStartTime = now();
+                  startPos = currentPos;
                   console.log("movement started");
                   moving = true;
+                  stillFrameCounter = 0;
                 }
               }
             }
             previousPos = currentPos;
-            frameCounter++;
           }
         }
         window.requestAnimationFrame(frameLoop);
