@@ -79,15 +79,17 @@ button:focus-visible {
   }
 }
 
-
 .top-bar {
   display: flex;
-  justify-content: center; 
+  margin: 0;
+  justify-content: center; /* Adjusted to center for the logo container */
   align-items: center; 
+  overflow: auto;
   width: 100%; 
   background-color: #ffffff;
   color: #000000; 
-  padding: 1rem 1rem; 
+  padding-top: 0.9rem;
+  padding-bottom: 0.9rem;
   position: fixed; 
   top: 0;
   left: 0; 
@@ -95,7 +97,31 @@ button:focus-visible {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
 }
 
+.top-bar img {
+  height: 35px;
+  /* Ensure the logo is centered within its container */
+  display: block; /* This will allow margin auto to work */
+  margin: auto;
+}
+
+.spacer {
+  flex: 1; /* Flex-grow is 1 for both spacers to push the logo to center */
+}
+
+.icon-container {
+  flex: 0; /* Flex-grow is set to 0 to prevent the icon container from growing */
+  margin-right: 15px; /* Keep your margin-right as is */
+}
+
+/* You may need to add this if you haven't already */
+.logo-container {
+  flex: 1; /* This will allow the logo to have space to be centered */
+  display: flex; /* This makes sure the image inside can be centered with margin auto */
+}
+
+
 h1 {
-  margin: 0; /* Remove default margin */
-  font-size: 1.5rem; /* Set the size of the title */
+  margin: 0;
+  margin-bottom: 0.5px; 
+  font-size: 1.5rem; 
 }
