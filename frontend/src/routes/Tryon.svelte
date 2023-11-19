@@ -25,6 +25,23 @@
     };
     createHandLandmarker();
 
+    // import and load gesture recognizer model from google
+    let gestureRecognizer = undefined;
+    const createGestureRecognizer = async() => {
+      const vision = await MediaPipeVision.FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+      );
+      gestureRecognizer = await MediaPipeVision.GestureRecognizer.createFromOptions(vision, {
+        baseOptions: {
+        modelAssetPath:
+          "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
+        delegate: "GPU"
+        },
+        runningMode: runningMode
+      });
+    };
+    createGestureRecognizer();
+
     let handCanvasElement;
     let handCanvasContext: CanvasRenderingContext2D;
     let videoElement;
@@ -39,7 +56,8 @@
       handCanvasElement.width = videoElement.videoWidth;
       handCanvasElement.height = videoElement.videoHeight;
       let lastVideoTime = -1;
-      let results = undefined;
+      let handLandmarkerResults = undefined;
+      let gestureRecognizerResults = undefined;
       let startTime = Math.floor(performance.now());
       let previousPos = undefined;
       let currentPos = undefined;
@@ -50,6 +68,10 @@
       const STILL_FRAME_THRESHOLD = 10;
       const EPS = 0.05;
       const MIN_SWIPE_VELOCITY = 0.3;
+      const MIN_UP_SWIPE_VELOCITY = 0.1;
+      const MIN_SWIPE_BUFFER_TIME = 1;
+      const DEFAULT_LAST_SWIPE_TIME = -(MIN_SWIPE_BUFFER_TIME + 100);
+      let lastSwipeTime = DEFAULT_LAST_SWIPE_TIME;
       let moving: boolean = false;
 
       // "min"/"max" is rough terminology
@@ -77,18 +99,25 @@
       function now() {
         return Math.floor(performance.now()) / 1000;
       }
+      function isVertical(slope) {
+        return (slopeBounds.vertical.min <= slope || slopeBounds.vertical.max >= slope);
+      }
+      function isHorizontal(slope) {
+        return (slopeBounds.vertical.min <= slope && slopeBounds.vertical.max >= slope);
+      }
       async function frameLoop() {
-        if (handLandmarker) {
+        if (handLandmarker && gestureRecognizer) {
           let startTimeMs = performance.now();
           if (lastVideoTime !== videoElement.currentTime) {
             lastVideoTime = videoElement.currentTime;
-            results = handLandmarker.detectForVideo(videoElement, startTimeMs);
+            handLandmarkerResults = handLandmarker.detectForVideo(videoElement, startTimeMs);
           }
           handCanvasContext.clearRect(0, 0, handCanvasElement.width, handCanvasElement.height);
-          if (results.landmarks && results.landmarks.length > 0 && results.landmarks[0].length > 8) {
+          if (handLandmarkerResults.landmarks && handLandmarkerResults.landmarks.length > 0 && handLandmarkerResults.landmarks[0].length > 8) {
             // console.log(results.landmarks[0][8]);
-            MediaPipeDrawing.drawLandmarks([results.landmarks[0][8]], {color: "FF0000", lineWidth: 2});
-            currentPos = results.landmarks[0][8];
+            console.log("pointing up");
+            MediaPipeDrawing.drawLandmarks([handLandmarkerResults.landmarks[0][8]], {color: "FF0000", lineWidth: 2});
+            currentPos = handLandmarkerResults.landmarks[0][8];
             if (previousPos !== undefined) {
               if (dista(currentPos, previousPos) < EPS) {
                 stillFrameCounter++;
@@ -101,13 +130,19 @@
                   
                   let slope = (currentPos.y - startPos.y)/(currentPos.x - startPos.x);
                   let avgVelocity = (dista(currentPos, startPos)/(motionEndTime - motionStartTime));
-                  if (avgVelocity >= MIN_SWIPE_VELOCITY) {
+                  if (avgVelocity >= MIN_UP_SWIPE_VELOCITY && isVertical(slope) && currentPos.y < previousPos.y) {
+                    lastSwipeTime = motionEndTime;
+                    console.log("up swipe");
+                  }
+                  else if (avgVelocity >= MIN_SWIPE_VELOCITY) {
                     console.log("fast enough to be a swipe");
                     console.log("slope", slope);
-                    if (slopeBounds.vertical.min <= slope || slopeBounds.vertical.max >= slope) {
+                    if (isVertical(slope)) {
+                      lastSwipeTime = motionEndTime;
                       console.log("vertical swipe");
                     }
-                    else if (slopeBounds.horizontal.min <= slope && slopeBounds.horizontal.max >= slope) {
+                    else if (isHorizontal(slope)) {
+                      lastSwipeTime = motionEndTime;
                       console.log("horizontal swipe");
                       swipe()
                     }
@@ -115,16 +150,23 @@
                 }
               }
               else {
-                if (!moving) {
+                if (!moving && (now() - lastSwipeTime >= MIN_SWIPE_BUFFER_TIME)) {
+                  lastSwipeTime = DEFAULT_LAST_SWIPE_TIME;
                   motionStartTime = now();
                   startPos = currentPos;
                   console.log("movement started");
                   moving = true;
                   stillFrameCounter = 0;
                 }
+                else if (now() - lastSwipeTime < MIN_SWIPE_BUFFER_TIME) {
+                  console.log("TOO FAST!");
+                }
               }
             }
             previousPos = currentPos;
+          }
+          else {
+            previousPos = undefined;
           }
         }
         window.requestAnimationFrame(frameLoop);
