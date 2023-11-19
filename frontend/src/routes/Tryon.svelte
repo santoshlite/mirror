@@ -74,6 +74,10 @@
       let lastSwipeTime = DEFAULT_LAST_SWIPE_TIME;
       let moving: boolean = false;
 
+      const TAKE_PHOTO_GESTURE = "Victory";
+      const TAKE_PHOTO_SCORE_THRESHOLD = 0.7;
+      let victorySignCurrentlyActive : boolean = false;
+
       // "min"/"max" is rough terminology
       let slopeBounds = {
         "vertical": {
@@ -111,11 +115,22 @@
           if (lastVideoTime !== videoElement.currentTime) {
             lastVideoTime = videoElement.currentTime;
             handLandmarkerResults = handLandmarker.detectForVideo(videoElement, startTimeMs);
+            gestureRecognizerResults = gestureRecognizer.recognizeForVideo(videoElement, startTimeMs);
+          }
+          let gestures = gestureRecognizerResults.gestures;
+          if (gestures && gestures.length > 0 && gestures[0].length > 0 && gestures[0][0].categoryName === TAKE_PHOTO_GESTURE && gestures[0][0].score >= TAKE_PHOTO_SCORE_THRESHOLD) {
+              if (!victorySignCurrentlyActive) {
+                console.log("user activated picture");
+                startCountdown();
+                victorySignCurrentlyActive = true;
+              }
+          }
+          else {
+            victorySignCurrentlyActive = false;
           }
           handCanvasContext.clearRect(0, 0, handCanvasElement.width, handCanvasElement.height);
           if (handLandmarkerResults.landmarks && handLandmarkerResults.landmarks.length > 0 && handLandmarkerResults.landmarks[0].length > 8) {
             // console.log(results.landmarks[0][8]);
-            console.log("pointing up");
             MediaPipeDrawing.drawLandmarks([handLandmarkerResults.landmarks[0][8]], {color: "FF0000", lineWidth: 2});
             currentPos = handLandmarkerResults.landmarks[0][8];
             if (previousPos !== undefined) {
