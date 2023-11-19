@@ -5,6 +5,7 @@
     import logo from '/src/assets/logo.png'; 
     import { clothes } from '../store.js'; 
     import Icon from '@iconify/svelte';
+    import SvelteMarkdown from 'svelte-markdown';
     import OpenAI from 'openai';
 
     import * as MediaPipeVision from '@mediapipe/tasks-vision';
@@ -46,6 +47,7 @@
 
     let handCanvasElement;
     let p;
+    let gpt_res;
     let api_result = [];
     let seg_result;
     let cameraSound = new Audio('/src/assets/camera.mp3');
@@ -58,6 +60,7 @@
     let countdown;
     let countdown_on = false;
     let newResult;
+    
 
 
     function getAllPrompts() {
@@ -65,7 +68,7 @@
     return items.map(item => item.prompt);
   }
 
-    let promptsArray = getAllPrompts(); // Call the function to get all images
+    let promptsArray = getAllPrompts();
 
     console.log(promptsArray);
 
@@ -264,8 +267,11 @@ function startCountdown() {
     canvasElement.getContext('2d').drawImage(videoElement, 0, 0);
     imageDataURL = canvasElement.toDataURL('image/png');
     cameraSound.play();
+    analyzeImage(imageDataURL);
     makeApiCall(promptsArray, imageDataURL);
+  
   }
+
 
   async function analyzeImage(image_url) {
     console.log(import.meta.env.VITE_OPENAI_KEY);
@@ -283,13 +289,11 @@ function startCountdown() {
         "content": [
           {
             "type": "text",
-            "text": "You are a professional stylist. Give pros and cons of my style based on layering, colouring and contrast. Be short and consice. Use bullet points. Bold key words. Max 4 bullet points total. No full sentences."
+            "text": "You are a professional stylist. Give pros and cons of my style based on layering, colouring and contrast. Be short and concise. Use bullet points. Bold key words. Max 4 bullet points total. No full sentences."
           },
           {
             "type": "image_url",
-            "image_url": {
-              "url": image_url
-            }
+            "image_url": image_url 
           }
         ]
       }
@@ -298,10 +302,15 @@ function startCountdown() {
   })
   });
   const data = await response.json();
-  console.log(data);
-  console.log(data[0]);
+  console.log(data['choices'][0]['message']['content']);
+  return data['choices'][0]['message']['content']
 }
 
+
+
+async function display_gpt_res() {
+ gpt_res = analyzeImage("data:image/png;base64,"+api_result[$currentIndex].img);
+}
 
   // This function will be called to make the API request
   async function makeApiCall(prompt, imageBase64) {
@@ -355,7 +364,6 @@ function startCountdown() {
     showSpinner = false;
   }
 
-
     onMount(() => {
       handCanvasContext = handCanvasElement.getContext('2d');
       MediaPipeDrawing = new MediaPipeVision.DrawingUtils(handCanvasContext);
@@ -363,7 +371,6 @@ function startCountdown() {
       if ($clothes.length === 0) {
         navigate('/');
       }
-      analyzeImage(imageDataURL);
     });
 
   </script>
@@ -406,6 +413,8 @@ function startCountdown() {
       Do ✌️ at the camera to take a picture!
     {:else}
       <img src={"data:image/png;base64,"+api_result[$currentIndex].img} class="displayed-image" alt="Displayed">
+      <button on:click={display_gpt_res}>Analyze</button>
+      <SvelteMarkdown {gpt_res} />
     {/if}
   </div>
 

@@ -4,15 +4,16 @@
     import Product from '/src/lib/Product.svelte';
     import logo from '/src/assets/logo.png'; 
     import { writable } from 'svelte/store';
+    import habs2 from '/src/assets/habs2.png';
     
 	let cart = [];
   let clothes_length;
   $: clothes_length = $clothes.length;
 
 	let products = [
-		{id: 1, name: "Sweatshirt", prompt: "stuff", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/444966/sub/goods_444966_sub14.jpg?width=750", price: 32.99, manufacturer:"Uniqlo"},
-		{id: 2, name: "Airism Cotton T-Shirt",  prompt: "Airism Cotton T-Shirt", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/457337/item/goods_54_457337.jpg?width=750", price: 12.99, manufacturer:"Uniqlo"},
-		{id: 3, name: "Long Sleeve Jacket", prompt: "Long Sleeve Jacket", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/464242/sub/goods_464242_sub14.jpg?width=750", price: 18.99, manufacturer:"Uniqlo"},
+    {id: 1, name: "Airism Cotton T-Shirt",  prompt: "Generate an image of a plain forest green t-shirt. It should be short-sleeved with a round neckline and a regular fit. The fabric should look smooth with no logos or designs, and the hem should appear neatly stitched.", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/457337/item/goods_54_457337.jpg?width=750", price: 12.99, manufacturer:"Uniqlo"},
+    {id: 2, name: "Short Sleeve Polo Shirt", prompt: "Create an image of a white polo shirt with short sleeves and a soft collar. It should have a two-button placket, with the buttons undone. The shirt's fabric should look smooth and pristine, with a slight sheen indicating a quality material. The sleeves should have ribbed armbands and the shirt should have a straight hem. No logo or design should be visible, maintaining a classic and versatile appearance.", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/455388/sub/goods_455388_sub14.jpg?width=750", price: 24.99, manufacturer:"Uniqlo"},
+    {id: 3, name: "Montreal Canadiens Jersey", prompt: "Red Montreal Canadiens jersey", image: habs2, manufacturer: "Montreal Canadiens"},
 		{id: 4, name: "Short Sleeve Polo Shirt", prompt: "Short Sleeve Polo Shirt", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/455388/sub/goods_455388_sub14.jpg?width=750", price: 24.99, manufacturer:"Uniqlo"},
 		{id: 5, name: "Flannel Long Sleeve Shirt", prompt: "Flannel Long Sleeve Shirt", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/462408/sub/goods_462408_sub14.jpg?width=750", price: 15.99, manufacturer:"Uniqlo"},
 		{id: 6, name: "Fleece Long Sleeve Jacket", prompt: "Fleece Long Sleeve Jacket", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/462028/sub/goods_462028_sub14.jpg?width=750", price: 20.99, manufacturer:"Uniqlo"},
@@ -83,11 +84,9 @@
     </div>
 </div>
 
-<br><br><br>
 
-<h1>Or Describe What You Would Like to Try </h1>
-
-
+<br><br>
+<p>Made with </p>
 
 {#if clothes_length > 0}
   <div class="try-now-button-container">

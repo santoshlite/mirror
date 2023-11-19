@@ -21,6 +21,7 @@
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.8",
     "flowbite-svelte": "^0.44.19",
+    "svelte-markdown": "^0.4.0",
     "svelte-routing": "^2.6.0"
   }
 }
