@@ -258,6 +258,7 @@ function startCountdown() {
   }
 
   function takePicture() {
+    api_result = [];
     canvasElement.width = videoElement.videoWidth;
     canvasElement.height = videoElement.videoHeight;
     canvasElement.getContext('2d').drawImage(videoElement, 0, 0);
