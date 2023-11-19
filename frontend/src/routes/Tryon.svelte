@@ -241,6 +241,7 @@
     canvasElement.getContext('2d').drawImage(videoElement, 0, 0);
     imageDataURL = canvasElement.toDataURL('image/png');
     cameraSound.play();
+    makeApiCall();
   }
 
 
@@ -274,7 +275,6 @@
     "max_tokens": 300
   })
   });
-
   const data = await response.json();
   console.log(data[0]);
 }
