@@ -44,6 +44,15 @@ def b64s(imgfile):
 # im = Image.open(io.BytesIO(base64.b64decode(response.json()["img"])))
 # im.show()
 
-res = requests.post("http://localhost:80/main", json={"img": b64s("testimage.png"), "prompt": "Montreal Canadiens Jersey"})
-im = Image.open(io.BytesIO(base64.b64decode(res.json()["img"])))
-im.show()
+requests.post("http://localhost:80/seg", json={"img": b64s("santoshOG.png")})
+
+prompts = ["plain black T-shirt", "plain pink T-shirt", "Montreal Canadiens jersey", "black long sleeve shirt", "white long sleeve shirt"]
+for p in prompts:
+    res = requests.post("http://localhost:80/inpaint", json={"prompt": p})
+    im = Image.open(io.BytesIO(base64.b64decode(res.json()["img"])))
+    im.show()
+
+# res = requests.post("http://localhost:80/main", json={"img": b64s("santoshOG.png"), "prompts": ["plain black T-shirt", "plain pink T-shirt", "Montreal Canadiens jersey", "black long sleeve shirt", "white long sleeve shirt"]})
+# for img64 in res.json()["imgs"]:
+#     im = Image.open(io.BytesIO(base64.b64decode(img64)))
+#     im.show()
