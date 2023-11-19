@@ -45,6 +45,7 @@
 
 
     let handCanvasElement;
+    let p;
     let api_result = [];
     let seg_result;
     let cameraSound = new Audio('/src/assets/camera.mp3');
@@ -304,6 +305,7 @@ function startCountdown() {
   // This function will be called to make the API request
   async function makeApiCall(prompt, imageBase64) {
     imageBase64 = imageBase64.split(',')[1];
+    console.log(promptsArray);
 
     try {
       const response = await fetch('https://fine-elegant-dragon.ngrok-free.app/seg', {
@@ -325,7 +327,7 @@ function startCountdown() {
       console.error('There was a problem with the fetch operation:', error);
     }
 
-    for(prompt in promptsArray){
+    for(p in prompt){
         try {
         const response = await fetch('https://fine-elegant-dragon.ngrok-free.app/inpaint', {
           method: 'POST',
@@ -333,7 +335,7 @@ function startCountdown() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            prompt: prompt
+            prompt: p
           }),
         });
 
