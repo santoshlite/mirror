@@ -3,6 +3,7 @@ from PIL import Image
 from typing import List, Optional, Union
 import io, uvicorn, gc
 import base64
+import requests
 from fastapi.responses import StreamingResponse
 import torch
 import time
@@ -10,10 +11,19 @@ from diffusers import StableDiffusionInpaintPipeline, DPMSolverMultistepSchedule
 from concurrent.futures import ThreadPoolExecutor
 from pydantic import BaseModel
 
+URL = "http://localhost:80/"
+HIDDEN_CLOTH_SEG_URL = "http://localhost:345/seg"
+class segReq(BaseModel):
+    img: str
+
 class inPaintReq(BaseModel):
     prompt: str
     img: str
     mask: str
+
+class mainReq(BaseModel):
+    img: str
+    prompt: str
 
 app = FastAPI()
 app.POOL: ThreadPoolExecutor = None
@@ -66,9 +76,24 @@ def inpaint(
     res = app.POOL.submit(pipe_nsd, prompt=body.prompt, image=img_pil, mask_image=mask_pil, height=img_pil.height, width=img_pil.width).result().images[0]
     torch.cuda.empty_cache()
     filtered_image = io.BytesIO()
-    res.save(filtered_image, "JPEG")
-    filtered_image.seek(0)
-    return StreamingResponse(filtered_image, media_type="image/jpeg")
+    res.save(filtered_image, "PNG")
+    # filtered_image.seek(0)
+    # return StreamingResponse(filtered_image, media_type="image/jpeg")
+    return base64.b64encode(filtered_image.getvalue()).decode()
+
+@app.post('/seg')
+def seg(body: segReq):
+    res = requests.post(HIDDEN_CLOTH_SEG_URL, json={"img": body.img})
+    # im = Image.open(io.BytesIO(base64.b64decode(res.json()["img"])))
+    # im.show()
+    return res.json()
+
+@app.post('/main')
+def main(body: mainReq):
+    
+    mask = seg(segReq(img=body.img))
+    out = inpaint(inPaintReq(prompt=body.prompt, img=body.img, mask=mask["img"]))
+    return {"img": out}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=80)
