@@ -24,7 +24,6 @@
           return newItems;
         }
       });
-    
     }
 </script>
 
@@ -32,7 +31,7 @@
     <img src={image} alt={name} class="product-image" />
     <div class="product-details">
         <div class="product-name">{name}</div>
-        <div class="product-manufacturer">from {manufacturer}</div>
+        <div class="product-manufacturer">{manufacturer}</div>
         <button class="buy-button" on:click={toggleSelection}
                 class:selected={isSelected}>
             {#if isSelected}
@@ -51,14 +50,14 @@
     background: #FFF;
     border-radius: 10px;
     border: 1.5px solid #e4e7eb;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     display: flex;
     flex-direction: column;
     max-width: 200px;
     margin: 10px;
+    box-shadow: 0 4px 8px rgba(0.05, 0.05, 0.05, 0.05);
     }
-    
+
     .favorite {
       align-self: flex-end;
       padding: 10px;
