@@ -85,8 +85,8 @@
 </div>
 
 
-<br><br>
-<p>Made with </p>
+<br>
+<p>Made with 💕 By Moeez, Roko, Louis and Santosh</p>
 
 {#if clothes_length > 0}
   <div class="try-now-button-container">
