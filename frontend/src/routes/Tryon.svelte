@@ -48,7 +48,7 @@
     let api_result = [];
     let seg_result;
     let cameraSound = new Audio('/src/assets/camera.mp3');
-    let showSpinner = true;
+    let showSpinner = false;
     let handCanvasContext: CanvasRenderingContext2D;
     let videoElement;
     let timer;
@@ -236,6 +236,7 @@
 function startCountdown() {
   
   if(!countdown_on){
+    showSpinner = true;
     countdown_on = true;
     timer = 5;
     countdown = setInterval(() => {
@@ -261,11 +262,11 @@ function startCountdown() {
     canvasElement.getContext('2d').drawImage(videoElement, 0, 0);
     imageDataURL = canvasElement.toDataURL('image/png');
     cameraSound.play();
-   makeApiCall("Montreal Canadiens Jersey", imageDataURL);
+    makeApiCall(promptsArray, imageDataURL);
   }
 
   async function analyzeImage(image_url) {
-
+    console.log(import.meta.env.VITE_OPENAI_KEY);
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -359,6 +360,7 @@ function startCountdown() {
       if ($clothes.length === 0) {
         navigate('/');
       }
+      analyzeImage(imageDataURL);
     });
 
   </script>
@@ -397,11 +399,12 @@ function startCountdown() {
   <div class="image-gallery">
     {#if showSpinner}
       <Icon icon="gg:spinner" style="font-size: 75px; animation: spin 1.5s linear infinite;" />
+    {:else if api_result.length === 0}
+      Do ✌️ at the camera to take a picture!
     {:else}
       <img src={"data:image/png;base64,"+api_result[$currentIndex].img} class="displayed-image" alt="Displayed">
     {/if}
   </div>
-
 
   <style>
 
@@ -465,11 +468,12 @@ function startCountdown() {
   }
 
   .displayed-image{
-    height: calc(100vh - 65px);
-    top: 65px;
-    left: 0;
+    top: 65px; 
+    width: 70%;
     margin-bottom: 1rem; 
     border-radius: 10px;
+    border: 2px solid var(--translucent-grey);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 
   .bottom-bar {
@@ -509,5 +513,6 @@ function startCountdown() {
   transition: opacity 0.5s ease; 
   z-index: 10;
 }
+
 
 </style>

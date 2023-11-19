@@ -61,6 +61,8 @@
 
   </div>
 
+  <p class="tagline">All of the benefits of shopping. <br> None of the pain.</p>
+
 <div class="home-body">
   <h1>Select Products To Try</h1>
     <!--
@@ -79,6 +81,8 @@
         {/each}
     </div>
 </div>
+
+<h1>Or Describe What You Would Like to Try </h1>
 
 
 
