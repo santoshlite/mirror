@@ -269,7 +269,7 @@ function startCountdown() {
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+      "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_KEY}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
@@ -295,6 +295,7 @@ function startCountdown() {
   })
   });
   const data = await response.json();
+  console.log(data);
   console.log(data[0]);
 }
 
@@ -464,7 +465,9 @@ function startCountdown() {
   }
 
   .displayed-image{
-    max-width: 50%;
+    height: calc(100vh - 65px);
+    top: 65px;
+    left: 0;
     margin-bottom: 1rem; 
     border-radius: 10px;
   }
