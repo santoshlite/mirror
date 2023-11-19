@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { writable } from 'svelte/store';
+    import { get, writable } from 'svelte/store';
     import { navigate } from 'svelte-routing';
     import logo from '/src/assets/logo.png'; 
     import { clothes } from '../store.js'; 
@@ -27,7 +27,6 @@
     };
     createHandLandmarker();
 
-    // import and load gesture recognizer model from google
     let gestureRecognizer = undefined;
     const createGestureRecognizer = async() => {
       const vision = await MediaPipeVision.FilesetResolver.forVisionTasks(
@@ -46,6 +45,8 @@
 
 
     let handCanvasElement;
+    let api_result = [];
+    let seg_result;
     let cameraSound = new Audio('/src/assets/camera.mp3');
     let showSpinner = true;
     let handCanvasContext: CanvasRenderingContext2D;
@@ -54,6 +55,18 @@
     let imageDataURL;
     let canvasElement;
     let countdown;
+    let countdown_on = false;
+    let newResult;
+
+
+    function getAllPrompts() {
+    const items = get(clothes); 
+    return items.map(item => item.name);
+  }
+
+    let promptsArray = getAllPrompts(); // Call the function to get all images
+
+    console.log(promptsArray);
 
     async function startGestureWebcam() {
 
@@ -144,7 +157,8 @@
           }
           let gestures = gestureRecognizerResults.gestures;
           if (gestures && gestures.length > 0 && gestures[0].length > 0 && gestures[0][0].categoryName === TAKE_PHOTO_GESTURE && gestures[0][0].score >= TAKE_PHOTO_SCORE_THRESHOLD) {
-              if (!victorySignCurrentlyActive) {
+          
+            if (!victorySignCurrentlyActive) {
                 console.log("user activated picture");
                 startCountdown();
                 victorySignCurrentlyActive = true;
@@ -153,9 +167,10 @@
           else {
             victorySignCurrentlyActive = false;
           }
+
           handCanvasContext.clearRect(0, 0, handCanvasElement.width, handCanvasElement.height);
           if (handLandmarkerResults.landmarks && handLandmarkerResults.landmarks.length > 0 && handLandmarkerResults.landmarks[0].length > 8) {
-            MediaPipeDrawing.drawLandmarks([handLandmarkerResults.landmarks[0][8]], {color: "FF0000", lineWidth: 2});
+            MediaPipeDrawing.drawLandmarks([handLandmarkerResults.landmarks[0][8]], {color: "lime", lineWidth: 2});
             currentPos = handLandmarkerResults.landmarks[0][8];
             if (previousPos !== undefined) {
               if (dista(currentPos, previousPos) < EPS) {
@@ -176,7 +191,6 @@
                     
                   
                     if (isHorizontal(slope)) {
-                      console.log("HERE");
                       swipe();
                       lastSwipeTime = currentTime; // Update last swipe time
                     }
@@ -204,6 +218,7 @@
     
     const currentIndex = writable(0);
   
+
     function startWebcam() {
       if (navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({ video: true })
@@ -216,17 +231,22 @@
           });
       }
     }
+    
+
+function startCountdown() {
   
-  function startCountdown() {
-  showSpinner = true; // Show spinner when countdown starts
-  timer = 5;
-  countdown = setInterval(() => {
-    timer -= 1;
-    if (timer <= 0) {
-      clearInterval(countdown);
-      takePicture();
-    }
-  }, 1000);
+  if(!countdown_on){
+    countdown_on = true;
+    timer = 5;
+    countdown = setInterval(() => {
+      timer -= 1;
+      if (timer <= 0) {
+        clearInterval(countdown);
+        takePicture();
+        countdown_on = false;
+      }
+    }, 1000);
+  }
 }
 
     function swipe() {
@@ -241,9 +261,8 @@
     canvasElement.getContext('2d').drawImage(videoElement, 0, 0);
     imageDataURL = canvasElement.toDataURL('image/png');
     cameraSound.play();
-    makeApiCall();
+   makeApiCall("Montreal Canadiens Jersey", imageDataURL);
   }
-
 
   async function analyzeImage(image_url) {
 
@@ -282,29 +301,53 @@
 
   // This function will be called to make the API request
   async function makeApiCall(prompt, imageBase64) {
+    imageBase64 = imageBase64.split(',')[1];
+
     try {
-      const response = await fetch('http://localhost:80/main', {
+      const response = await fetch('https://fine-elegant-dragon.ngrok-free.app/seg', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          img: imageBase64,
-          prompt: prompt
+          img: imageBase64
         }),
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+      seg_result = await response.json();
 
-      const result = await response.json();
-      // Process the result here
-      console.log(result);
-      return result.img; // Assuming the API returns an image in base64
     } catch (error) {
       console.error('There was a problem with the fetch operation:', error);
     }
+
+    for(prompt in promptsArray){
+        try {
+        const response = await fetch('https://fine-elegant-dragon.ngrok-free.app/inpaint', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt: prompt
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        newResult = await response.json();
+        api_result.push(newResult); 
+
+      } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+      }
+    }
+
+    showSpinner = false;
   }
 
 
@@ -318,7 +361,6 @@
     });
 
   </script>
-  
 
 
 <div class="top-bar">
@@ -328,15 +370,7 @@
   </a>
   <div class="spacer"></div> 
 
-  <!--
-  <div class="icon-container">
-    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" class="text-xl" height="1.5em" width="1.5em" xmlns="http://www.w3.org/2000/svg"><path d="M6.50488 2H17.5049C17.8196 2 18.116 2.14819 18.3049 2.4L21.0049 6V21C21.0049 21.5523 20.5572 22 20.0049 22H4.00488C3.4526 22 3.00488 21.5523 3.00488 21V6L5.70488 2.4C5.89374 2.14819 6.19013 2 6.50488 2ZM19.0049 8H5.00488V20H19.0049V8ZM18.5049 6L17.0049 4H7.00488L5.50488 6H18.5049ZM9.00488 10V12C9.00488 13.6569 10.348 15 12.0049 15C13.6617 15 15.0049 13.6569 15.0049 12V10H17.0049V12C17.0049 14.7614 14.7663 17 12.0049 17C9.24346 17 7.00488 14.7614 7.00488 12V10H9.00488Z"></path></svg>
-    <div class="popup">No Product on the cart.</div>
-  </div>
-  -->
-
 </div>
-
   
   <div class="webcam-container">
     <canvas id="handCanvas" bind:this={handCanvasElement}></canvas>
@@ -359,20 +393,12 @@
     {/each}
   </div>
 
-
   <div class="image-gallery">
     {#if showSpinner}
       <Icon icon="gg:spinner" style="font-size: 75px; animation: spin 1.5s linear infinite;" />
+    {:else}
+      <img src={"data:image/png;base64,"+api_result[$currentIndex].img} class="displayed-image" alt="Displayed">
     {/if}
-
-    <!--
-    <div class="image-display">
-      {#if $clothes.length > 0}
-        <img src={$clothes[$currentIndex].image} class="displayed-image" alt="Displayed">
-      {/if}
-    </div>
-    -->
-
   </div>
 
 
@@ -415,7 +441,9 @@
       z-index: 3;
     }
 
-    .image-gallery {
+  .image-gallery {
+    display: flex; 
+    justify-content: center;
     position: absolute;
     top: 65px; 
     right: 0;
