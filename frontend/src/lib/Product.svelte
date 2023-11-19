@@ -1,6 +1,7 @@
 <script>
     import { clothes } from '../store.js'; 
     export let name = "";
+    export let prompt = "";
     export let manufacturer = "";
     export let price = "";
     export let image = "";
@@ -18,7 +19,7 @@
           isSelected = false; 
           return filteredItems;
         } else {
-          let newItems = [...items, { id, name, manufacturer, price, image }];
+          let newItems = [...items, { id, name, prompt, manufacturer, price, image }];
           console.log('Item added, new length:', newItems.length);
           isSelected = true; 
           return newItems;
