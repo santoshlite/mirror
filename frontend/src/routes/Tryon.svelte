@@ -62,7 +62,7 @@
 
     function getAllPrompts() {
     const items = get(clothes); 
-    return items.map(item => item.name);
+    return items.map(item => item.prompt);
   }
 
     let promptsArray = getAllPrompts(); // Call the function to get all images
