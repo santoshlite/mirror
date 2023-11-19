@@ -2,15 +2,23 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
+  --translucent-grey: rgba(128, 128, 128, 0.5);
   color-scheme: light dark;
   color: rgba(0, 0, 0, 0.87);
-  background-color: #ffffff;
-
+  background-color: white;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 a {
@@ -72,40 +80,34 @@ button {
 .top-bar {
   display: flex;
   margin: 0;
-  justify-content: space-between;
-  align-items: center; 
+  backdrop-filter: blur(10px);
+  justify-content: left;
+  align-items: center;
   overflow: visible;
-  width: 100%; 
-  background-color: #ffffff;
-  color: #000000; 
+  width: 100%;
+  color: #000000;
   padding-top: 0.9rem;
   padding-bottom: 0.9rem;
-  position: fixed; 
+  position: fixed;
   top: 0;
-  left: 0; 
-  z-index: 1000; 
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+  left: 0;
+  z-index: 1000;
 }
 
 .top-bar::before {
-  content: '';
   display: block;
-  /* Assuming the icon container is 1.5em wide plus 15px margin */
   width: calc(1.5em + 15px); 
-  /* This will balance the space taken by the icon on the right */
 }
 
 .top-bar img {
   height: 35px;
-  /* Center the image in case it's not already */
   display: block;
-  margin: auto;
+  margin-left: 15px;
 }
 
 .icon-container {
-  /* Keep this as is */
-  margin-right: 15px;
-  position: relative;
+  margin-left: auto;
+  margin-right: 10px;
 }
 
 .popup {
@@ -156,3 +158,5 @@ h1 {
   margin: 20px;
   font-size: 1.5rem; 
 }
+
+
