@@ -10,12 +10,12 @@
   $: clothes_length = $clothes.length;
 
 	let products = [
-		{id: 1, name: "Sweatshirt", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/444966/sub/goods_444966_sub14.jpg?width=750", price: 32.99, manufacturer:"Uniqlo"},
-		{id: 2, name: "Airism Cotton T-Shirt", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/457337/item/goods_54_457337.jpg?width=750", price: 12.99, manufacturer:"Uniqlo"},
-		{id: 3, name: "Long Sleeve Jacket", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/464242/sub/goods_464242_sub14.jpg?width=750", price: 18.99, manufacturer:"Uniqlo"},
-		{id: 4, name: "Short Sleeve Polo Shirt", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/455388/sub/goods_455388_sub14.jpg?width=750", price: 24.99, manufacturer:"Uniqlo"},
-		{id: 5, name: "Flannel Long Sleeve Shirt", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/462408/sub/goods_462408_sub14.jpg?width=750", price: 15.99, manufacturer:"Uniqlo"},
-		{id: 6, name: "Fleece Long Sleeve Jacket", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/462028/sub/goods_462028_sub14.jpg?width=750", price: 20.99, manufacturer:"Uniqlo"},
+		{id: 1, name: "Sweatshirt", prompt: "Sweatshirt", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/444966/sub/goods_444966_sub14.jpg?width=750", price: 32.99, manufacturer:"Uniqlo"},
+		{id: 2, name: "Airism Cotton T-Shirt",  prompt: "Airism Cotton T-Shirt", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/457337/item/goods_54_457337.jpg?width=750", price: 12.99, manufacturer:"Uniqlo"},
+		{id: 3, name: "Long Sleeve Jacket", prompt: "Long Sleeve Jacket", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/464242/sub/goods_464242_sub14.jpg?width=750", price: 18.99, manufacturer:"Uniqlo"},
+		{id: 4, name: "Short Sleeve Polo Shirt", prompt: "Short Sleeve Polo Shirt", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/455388/sub/goods_455388_sub14.jpg?width=750", price: 24.99, manufacturer:"Uniqlo"},
+		{id: 5, name: "Flannel Long Sleeve Shirt", prompt: "Flannel Long Sleeve Shirt", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/462408/sub/goods_462408_sub14.jpg?width=750", price: 15.99, manufacturer:"Uniqlo"},
+		{id: 6, name: "Fleece Long Sleeve Jacket", prompt: "Fleece Long Sleeve Jacket", image: "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/462028/sub/goods_462028_sub14.jpg?width=750", price: 20.99, manufacturer:"Uniqlo"},
 	]
 	
 	const addToCart = (product) => {
