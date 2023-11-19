@@ -30,7 +30,7 @@
 <div class="product-card">
     <img src={image} alt={name} class="product-image" />
     <div class="product-details">
-        <div class="product-name">{name}</div>
+        <div class="product-name"><u>{name}</u></div>
         <div class="product-manufacturer">{manufacturer}</div>
         <button class="buy-button" on:click={toggleSelection}
                 class:selected={isSelected}>
@@ -44,29 +44,22 @@
 </div>
   
   
-  
   <style>
     .product-card {
     background: #FFF;
     border-radius: 10px;
-    border: 1.5px solid #e4e7eb;
+    border: 1.5px solid #64748b45;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    max-width: 200px;
+    max-width: 250px;
     margin: 10px;
     box-shadow: 0 4px 8px rgba(0.05, 0.05, 0.05, 0.05);
-    }
-
-    .favorite {
-      align-self: flex-end;
-      padding: 10px;
-      cursor: pointer;
     }
   
     .product-image {
         width: 100%;
-        height: 150px; 
+        height: auto; 
         object-fit: cover;
         background: #FAFAFA; 
 }
