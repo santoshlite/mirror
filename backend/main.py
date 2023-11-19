@@ -10,6 +10,7 @@ import time
 from diffusers import StableDiffusionInpaintPipeline, DPMSolverMultistepScheduler
 from concurrent.futures import ThreadPoolExecutor
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 URL = "http://localhost:80/"
 HIDDEN_CLOTH_SEG_URL = "http://localhost:345/seg"
@@ -18,15 +19,17 @@ class segReq(BaseModel):
 
 class inPaintReq(BaseModel):
     prompt: str
-    img: str
-    mask: str
-
-class mainReq(BaseModel):
-    img: str
-    prompt: str
 
 app = FastAPI()
 app.POOL: ThreadPoolExecutor = None
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def startup_event():
@@ -65,8 +68,12 @@ def inpaint(
     body: inPaintReq
 ):
     # res = pipe_nsd(prompt=prompt, image=img, mask_image=mask).images[0]
-    img_bytes = base64.b64decode(body.img)
-    mask_bytes = base64.b64decode(body.mask)
+    with open("temp/body", "r") as bodyf:
+        img_bytes = base64.b64decode(bodyf.read())
+    # img_bytes = base64.b64decode(body.img)
+    with open("temp/mask", "r") as maskf:
+        mask_bytes = base64.b64decode(maskf.read())
+    # mask_bytes = base64.b64decode(body.mask)
     
     img_pil = Image.open(io.BytesIO(img_bytes)).convert("RGB")
     mask_pil = Image.open(io.BytesIO(mask_bytes)).convert("RGB")
@@ -79,21 +86,20 @@ def inpaint(
     res.save(filtered_image, "PNG")
     # filtered_image.seek(0)
     # return StreamingResponse(filtered_image, media_type="image/jpeg")
-    return base64.b64encode(filtered_image.getvalue()).decode()
+    return {"img": base64.b64encode(filtered_image.getvalue()).decode()}
 
 @app.post('/seg')
 def seg(body: segReq):
+    with open("temp/body", "w+") as bodyf:
+        bodyf.write(body.img)
     res = requests.post(HIDDEN_CLOTH_SEG_URL, json={"img": body.img})
-    # im = Image.open(io.BytesIO(base64.b64decode(res.json()["img"])))
+    with open("temp/mask", 'w+') as maskf:
+        maskf.write(res.json()["img"])
+    # maskim = Image.open(io.BytesIO(base64.b64decode(res.json()["img"])))
+    # maskim.save("temp/mask.png")
     # im.show()
-    return res.json()
 
-@app.post('/main')
-def main(body: mainReq):
-    
-    mask = seg(segReq(img=body.img))
-    out = inpaint(inPaintReq(prompt=body.prompt, img=body.img, mask=mask["img"]))
-    return {"img": out}
+    return res.json()
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=80)
