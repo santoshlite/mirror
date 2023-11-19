@@ -5,7 +5,7 @@
     import logo from '/src/assets/logo.png'; 
     import { clothes } from '../store.js'; 
     import Icon from '@iconify/svelte';
-
+    import OpenAI from 'openai';
 
     import * as MediaPipeVision from '@mediapipe/tasks-vision';
     let MediaPipeDrawing: MediaPipeVision.DrawingUtils;
@@ -200,6 +200,8 @@
       }
       await frameLoop();
     }
+
+    
     const currentIndex = writable(0);
   
     function startWebcam() {
@@ -233,13 +235,78 @@
     });
   }
 
-    function takePicture() {
+  function takePicture() {
     canvasElement.width = videoElement.videoWidth;
     canvasElement.height = videoElement.videoHeight;
     canvasElement.getContext('2d').drawImage(videoElement, 0, 0);
     imageDataURL = canvasElement.toDataURL('image/png');
     cameraSound.play();
+    makeApiCall();
   }
+
+
+  async function analyzeImage(image_url) {
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+    "model": "gpt-4-vision-preview",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "You are a professional stylist. Give pros and cons of my style based on layering, colouring and contrast. Be short and consice. Use bullet points. Bold key words. Max 4 bullet points total. No full sentences."
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": image_url
+            }
+          }
+        ]
+      }
+    ],
+    "max_tokens": 300
+  })
+  });
+  const data = await response.json();
+  console.log(data[0]);
+}
+
+
+  // This function will be called to make the API request
+  async function makeApiCall(prompt, imageBase64) {
+    try {
+      const response = await fetch('http://localhost:80/main', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          img: imageBase64,
+          prompt: prompt
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      // Process the result here
+      console.log(result);
+      return result.img; // Assuming the API returns an image in base64
+    } catch (error) {
+      console.error('There was a problem with the fetch operation:', error);
+    }
+  }
+
 
     onMount(() => {
       handCanvasContext = handCanvasElement.getContext('2d');
@@ -267,6 +334,7 @@
     <div class="popup">No Product on the cart.</div>
   </div>
   -->
+
 </div>
 
   
@@ -296,7 +364,6 @@
     {#if showSpinner}
       <Icon icon="gg:spinner" style="font-size: 75px; animation: spin 1.5s linear infinite;" />
     {/if}
-    <button on:click={startCountdown}>Take pic</button>
 
     <!--
     <div class="image-display">
