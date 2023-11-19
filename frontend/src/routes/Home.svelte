@@ -73,6 +73,7 @@
 
         <Product 
         name={product.name} 
+        prompt = {product.prompt}
         id = {product.id}
         manufacturer={product.manufacturer} 
         price={product.price} 
@@ -81,6 +82,8 @@
         {/each}
     </div>
 </div>
+
+<br><br><br>
 
 <h1>Or Describe What You Would Like to Try </h1>
 
