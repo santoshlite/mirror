@@ -25,4 +25,4 @@ dist-ssr
 *.sw?
 
 ../backend/temp/
-../backend/huggingface-cloth-segmentation/model/
+#../backend/huggingface-cloth-segmentation/model/
